@@ -22,7 +22,7 @@ class ProductCard extends StatelessWidget {
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
                 image: DecorationImage(
-                  image: NetworkImage(product.images!.first),
+                  image: NetworkImage(product.image ?? ''),
                   fit: BoxFit.cover,
                 ),
               ),
@@ -30,26 +30,7 @@ class ProductCard extends StatelessWidget {
                 alignment: Alignment.topRight,
                 child: IconButton(
                   icon: Icon(Icons.remove_red_eye, color: Colors.black),
-                  onPressed: () {
-                    showDialog(
-                      context: context,
-                      builder: (BuildContext context) {
-                        return AlertDialog(
-                          title: Text(product.title),
-                          content: Text(product.description ??
-                              'No description available'),
-                          actions: [
-                            TextButton(
-                              child: Text('Close'),
-                              onPressed: () {
-                                Navigator.of(context).pop();
-                              },
-                            ),
-                          ],
-                        );
-                      },
-                    );
-                  },
+                  onPressed: () {},
                 ),
               ),
             ),
@@ -59,19 +40,12 @@ class ProductCard extends StatelessWidget {
             child: Column(
               children: [
                 Text(
-                  product.title,
+                  product.name,
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
                 SizedBox(height: 5),
-                Text(
-                  product.description ?? 'No description available',
-                  style: TextStyle(fontSize: 14, color: Colors.grey[600]),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  textAlign: TextAlign.center,
-                ),
               ],
             ),
           ),
