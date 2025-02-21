@@ -1,89 +1,55 @@
 import 'package:flutter/material.dart';
+import 'package:my_first_app/api/call.dart';
+import 'package:my_first_app/api/product_model.dart';
+import 'package:my_first_app/widgets/card.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color.fromARGB(255, 21, 81, 211),
-        ),
-        useMaterial3: true,
-      ),
-      home: const MyHomePage(title: 'Flutter Moiz Home Page'),
+      debugShowCheckedModeBanner: false,
+      title: 'Products Grid',
+      theme: ThemeData(primarySwatch: Colors.blue),
+      home: ProductGridScreen(),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-
-  final String title;
-
-  @override
-  State<MyHomePage> createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
+class ProductGridScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    List<String> _data = ['dates', 'apple'];
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        title: Text(widget.title),
-      ),
-      body: ListView.builder(
-        itemCount: 1,
-        itemBuilder: (context, i) {
-          return Card(
-            elevation: 2,
-            color: Colors.brown.withValues(alpha: 0.03),
-            child: Column(
-              children: [
-                ListTile(
-                  leading: Icon(Icons.arrow_drop_down_circle),
-                  title: const Text('Card title 1'),
-                  subtitle: Text(
-                    'Secondary Text',
-                    style: TextStyle(color: Colors.grey.shade600),
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Text(
-                    "Abdullah",
-                    style: TextStyle(color: Colors.black),
-                  ),
-                ),
-                ButtonBar(
-                  alignment: MainAxisAlignment.start,
-                  children: [
-                    TextButton(
-                      onPressed: () {
-                        //
-                      },
-                      child: const Text('Button 1'),
-                    ),
-                    TextButton(
-                      onPressed: () {
-                        //
-                      },
-                      child: const Text('Button 2'),
-                    ),
-                  ],
-                ),
-                Image.network(
-                  "https://images.pexels.com/photos/2325447/pexels-photo-2325447.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
-                ),
-              ],
+      appBar: AppBar(title: Text('Products')),
+      body: FutureBuilder<List<Products>>(
+        future: fetchProducts(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(child: CircularProgressIndicator());
+          } else if (snapshot.hasError) {
+            return Center(child: Text('Error: ${snapshot.error}'));
+          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+            return Center(child: Text('No products found!'));
+          }
+
+          List<Products> products = snapshot.data!;
+
+          return Padding(
+            padding: EdgeInsets.all(8.0),
+            child: GridView.builder(
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                crossAxisSpacing: 8.0,
+                mainAxisSpacing: 8.0,
+                childAspectRatio: 0.8,
+              ),
+              itemCount: products.length,
+              itemBuilder: (context, index) {
+                return ProductCard(product: products[index]);
+              },
             ),
           );
         },
