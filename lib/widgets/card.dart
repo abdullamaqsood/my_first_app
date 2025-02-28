@@ -28,10 +28,10 @@ class ProductCard extends StatelessWidget {
               ),
               child: Align(
                 alignment: Alignment.topRight,
-                child: IconButton(
-                  icon: Icon(Icons.remove_red_eye, color: Colors.black),
-                  onPressed: () {},
-                ),
+                // child: IconButton(
+                //   icon: Icon(Icons.remove_red_eye, color: Colors.black),
+                //   onPressed: () {},
+                // ),
               ),
             ),
           ),
@@ -46,6 +46,14 @@ class ProductCard extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                 ),
                 SizedBox(height: 5),
+                Text(
+                  product.physicalDescription?.gender ??
+                      'No description available',
+                  style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
+                ),
               ],
             ),
           ),

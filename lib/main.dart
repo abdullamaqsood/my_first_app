@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:my_first_app/api/call.dart';
-import 'package:my_first_app/api/product_model.dart';
 import 'package:my_first_app/widgets/card.dart';
 
 void main() {
-  runApp(MyApp());
+  runApp(
+    ChangeNotifierProvider(
+      create: (context) => ProductsProvider(),
+      child: MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -19,41 +24,46 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class ProductGridScreen extends StatelessWidget {
+class ProductGridScreen extends StatefulWidget {
+  @override
+  _ProductGridScreenState createState() => _ProductGridScreenState();
+}
+
+class _ProductGridScreenState extends State<ProductGridScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<ProductsProvider>(context, listen: false).fetchProducts();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
+    final productProvider = Provider.of<ProductsProvider>(context);
+
     return Scaffold(
       appBar: AppBar(title: Text('Products')),
-      body: FutureBuilder<List<Products>>(
-        future: fetchProducts(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
-          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return Center(child: Text('No products found!'));
-          }
-
-          List<Products> products = snapshot.data!;
-
-          return Padding(
-            padding: EdgeInsets.all(8.0),
-            child: GridView.builder(
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                crossAxisSpacing: 8.0,
-                mainAxisSpacing: 8.0,
-                childAspectRatio: 0.8,
-              ),
-              itemCount: products.length,
-              itemBuilder: (context, index) {
-                return ProductCard(product: products[index]);
-              },
-            ),
-          );
-        },
-      ),
+      body: productProvider.isLoading
+          ? Center(child: CircularProgressIndicator())
+          : productProvider.products.isEmpty
+              ? Center(child: Text('No products found!'))
+              : Padding(
+                  padding: EdgeInsets.all(8.0),
+                  child: GridView.builder(
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      crossAxisSpacing: 8.0,
+                      mainAxisSpacing: 8.0,
+                      childAspectRatio: 0.8,
+                    ),
+                    itemCount: productProvider.products.length,
+                    itemBuilder: (context, index) {
+                      return ProductCard(
+                          product: productProvider.products[index]);
+                    },
+                  ),
+                ),
     );
   }
 }
