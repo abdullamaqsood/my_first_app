@@ -1,118 +1,143 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
-void main() {
-  runApp(const CaseTrackerApp());
-}
+void main() => runApp(const MyApp());
 
-class CaseTrackerApp extends StatelessWidget {
-  const CaseTrackerApp({super.key});
+/// GlobalKey to access DetailsScreenState
+final GlobalKey<DetailsScreenState> detailsScreenKey =
+    GlobalKey<DetailsScreenState>();
+
+/// The route configuration.
+final GoRouter _router = GoRouter(
+  routes: <RouteBase>[
+    GoRoute(
+      path: '/',
+      builder: (BuildContext context, GoRouterState state) {
+        return const HomeScreen();
+      },
+      routes: <RouteBase>[
+        GoRoute(
+          path: 'details',
+          builder: (BuildContext context, GoRouterState state) {
+            return DetailsScreen(key: detailsScreenKey);
+          },
+        ),
+        GoRoute(
+          path: 'second',
+          builder: (BuildContext context, GoRouterState state) {
+            return const SecondScreen();
+          },
+        ),
+        GoRoute(
+          path: 'third',
+          builder: (BuildContext context, GoRouterState state) {
+            return const ThirdScreen();
+          },
+        ),
+      ],
+    ),
+  ],
+);
+
+/// The main app.
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData.light(),
-      home: const CaseTrackerScreen(),
+    return MaterialApp.router(
+      routerConfig: _router,
     );
   }
 }
 
-class CaseTrackerScreen extends StatelessWidget {
-  const CaseTrackerScreen({super.key});
+/// The home screen
+class HomeScreen extends StatelessWidget {
+  const HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text(
-          "Case Tracker",
-          style: TextStyle(
-            color: Colors.white,
-          ),
-        ),
-        centerTitle: true,
-        backgroundColor: Colors.black,
-      ),
-      backgroundColor: Colors.black,
-      body: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: ListView.builder(
-          itemCount: DataPoint.values.length,
-          itemBuilder: (context, index) {
-            return _buildCaseStat(DataPoint.values[index]);
-          },
+      appBar: AppBar(title: const Text('Home Screen')),
+      body: Center(
+        child: ElevatedButton(
+          onPressed: () => context.push('/details'),
+          child: const Text('Go to the Details Screen'),
         ),
       ),
     );
-  }
-
-  Widget _buildCaseStat(DataPoint data) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 20),
-      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
-      decoration: BoxDecoration(
-        color: Colors.black54,
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start, // Align title to the left
-        children: [
-          Text(
-            data.name,
-            style: TextStyle(
-                fontSize: 18, fontWeight: FontWeight.bold, color: data.color),
-          ),
-          const SizedBox(height: 8),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Row(
-                children: [
-                  Image.asset(
-                    data.assetPath,
-                    height: 40,
-                    width: 40,
-                    color: data.color,
-                  ),
-                  const SizedBox(width: 15),
-                ],
-              ),
-              Text(
-                _getCaseValue(data),
-                style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: data.color),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  String _getCaseValue(DataPoint data) {
-    switch (data) {
-      case DataPoint.casesTotal:
-        return "9,231,249";
-      case DataPoint.casesActive:
-        return "123,214";
-      case DataPoint.deaths:
-        return "51,245";
-      case DataPoint.recovered:
-        return "7,452,340";
-    }
   }
 }
 
-enum DataPoint {
-  casesTotal('Total Cases', 'assets/count.png', Color(0xFFFFF492)),
-  casesActive('Active Cases', 'assets/fever.png', Color(0xFFE99600)),
-  deaths('Deaths', 'assets/death.png', Color(0xFFE40000)),
-  recovered('Recovered', 'assets/patient.png', Color(0xFF70A901));
+/// The details screen
+class DetailsScreen extends StatefulWidget {
+  const DetailsScreen({super.key});
 
-  const DataPoint(this.name, this.assetPath, this.color);
-  final String name;
-  final String assetPath;
-  final Color color;
+  @override
+  DetailsScreenState createState() => DetailsScreenState();
+}
+
+/// State class for DetailsScreen
+class DetailsScreenState extends State<DetailsScreen> {
+  void myFunction() {
+    debugPrint("Function called when returning from ThirdScreen!");
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Returned from Third Screen!')),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Details Screen')),
+      body: Center(
+        child: ElevatedButton(
+          onPressed: () => context.push('/second'),
+          child: const Text('Go to the Second Screen'),
+        ),
+      ),
+    );
+  }
+}
+
+/// The second screen
+class SecondScreen extends StatelessWidget {
+  const SecondScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Second Screen')),
+      body: Center(
+        child: ElevatedButton(
+          onPressed: () => context.push('/third'),
+          child: const Text('Go to the Third Screen'),
+        ),
+      ),
+    );
+  }
+}
+
+/// The third screen
+class ThirdScreen extends StatelessWidget {
+  const ThirdScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Third Screen')),
+      body: Center(
+        child: ElevatedButton(
+          onPressed: () {
+            while (GoRouter.of(context).canPop()) {
+              context.pop();
+            }
+            // Call the function in DetailsScreen using GlobalKey
+            detailsScreenKey.currentState?.myFunction();
+          },
+          child: const Text('Go Back to Details'),
+        ),
+      ),
+    );
+  }
 }
